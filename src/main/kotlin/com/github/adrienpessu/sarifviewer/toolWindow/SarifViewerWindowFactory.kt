@@ -223,7 +223,7 @@ class SarifViewerWindowFactory : ToolWindowFactory {
         }
 
         private fun emptyNode(
-            map: HashMap<String, MutableList<Leaf>>,
+            map: MutableMap<String, MutableList<Leaf>>,
             repositoryFullName: String?
         ) {
             val element = Leaf(
@@ -306,7 +306,7 @@ class SarifViewerWindowFactory : ToolWindowFactory {
                                 toggleLoading()
                                 currentView = selectedItem
                                 clearJSplitPane()
-                                var map = HashMap<String, MutableList<Leaf>>()
+                                var map: MutableMap<String, MutableList<Leaf>> = HashMap()
                                 if (localMode) {
                                     if (cacheSarif?.runs?.isEmpty() == false) {
                                         map = service.analyseSarif(cacheSarif!!, currentView)
@@ -376,7 +376,7 @@ class SarifViewerWindowFactory : ToolWindowFactory {
         }
 
         private fun buildContent(
-            map: HashMap<String, MutableList<Leaf>>
+            map: Map<String, MutableList<Leaf>>
         ) {
             treeBuilding(map)
         }
@@ -419,7 +419,7 @@ class SarifViewerWindowFactory : ToolWindowFactory {
             worker.execute()
         }
 
-        private fun treeBuilding(map: HashMap<String, MutableList<Leaf>>) {
+        private fun treeBuilding(map: Map<String, MutableList<Leaf>>) {
             val root = DefaultMutableTreeNode(project.name)
 
             map.forEach { (key, value) ->
@@ -645,9 +645,9 @@ class SarifViewerWindowFactory : ToolWindowFactory {
             github: GitHubInstance,
             repositoryFullName: String,
             base: String? = null
-        ): HashMap<String, MutableList<Leaf>> {
+        ): MutableMap<String, MutableList<Leaf>> {
             val sarifs = service.getSarifFromGitHub(github, repositoryFullName, sarifGitHubRef).filterNotNull()
-            var map = HashMap<String, MutableList<Leaf>>()
+            var map: MutableMap<String, MutableList<Leaf>> = HashMap()
             val results = sarifs.flatMap { it.runs?.get(0)?.results ?: emptyList() }
             if (sarifs.isNotEmpty()) {
                 if (sarifGitHubRef.startsWith("refs/pull/") && base != null) {
@@ -675,12 +675,12 @@ class SarifViewerWindowFactory : ToolWindowFactory {
 
         private fun extractSarifFromFile(
             file: File
-        ): HashMap<String, MutableList<Leaf>> {
+        ): Map<String, MutableList<Leaf>> {
             // file to String
             val sarifString = file.readText(Charset.defaultCharset())
             val sarif = ObjectMapper().readValue(sarifString, SarifSchema210::class.java)
             cacheSarif = sarif
-            var map = HashMap<String, MutableList<Leaf>>()
+            var map: MutableMap<String, MutableList<Leaf>> = HashMap()
             if (sarif.runs?.isEmpty() == false) {
                 map = service.analyseSarif(sarif, currentView)
             }
